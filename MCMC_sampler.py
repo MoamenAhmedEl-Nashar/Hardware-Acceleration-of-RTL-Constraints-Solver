@@ -72,13 +72,13 @@ class MBINF:
         self.no_of_int_variables = 0
         self.no_of_boolean_variables = 0
         self.no_of_clauses = 0
-        self.clause_set = clause()
+        self.clauses = []
 
     def set_formula(self, no_of_int_variables, no_of_boolean_variables, no_of_clauses, clause_set):
         self.no_of_int_variables = no_of_int_variables
         self.no_of_boolean_variables = no_of_boolean_variables
         self.no_of_clauses = no_of_clauses
-        self.clause_set = clause_set
+        self.clauses = clauses
 
     def print_formula(self):
 
@@ -86,7 +86,7 @@ class MBINF:
         print("MBINF formula = ", sep=' ', end='', flush=True)
 
         for i in range (0, self.no_of_clauses):
-            self.clause_set[i].print_clause()
+            self.clauses[i].print_clause()
             if i!=self.no_of_clauses-1:
                 print("&", sep=' ', end='', flush=True)
 
