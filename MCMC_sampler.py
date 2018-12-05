@@ -205,9 +205,6 @@ class Sampler:
 
     def metropolis_move(self):
 
-        make_random_assignment_integer()
-        make_random_assignment_boolean()
-        
         random_index_is_int_or_bool=random.randint(0,1)    ## 1 --> int     0-->  boolean
         if random_is_int_or_bool == 1:
             v_index=randint(0,no_of_int_variables)
@@ -263,7 +260,8 @@ C1.set_clause(0, 3, [], [L1,L2,L3])
 formula = MBINF()
 formula.set_formula(0 , 2 , [] ,integer_variable_names , 1, [C1])
 sampler=Sampler(formula,1,1)
-
+sampler.make_random_assignment_integer()
+sampler.make_random_assignment_boolean()
 #formula.print_formula()
 
 #L1.print_int_literal()
