@@ -1,3 +1,5 @@
+import random
+random.seed(2)
 # boolean literal can be x^k or !x^k
 
 
@@ -119,12 +121,42 @@ class Sampler:
 
     # this function computes temperature (the value that controls the probability p computed in metropolis move)
     def compute_temperature(self):
+        
 
     ########################
 
 
     def metropolis_move(self):
        ###########################
+        random_index_is_int_or_bool=randint(0,1)    ## 1 --> int     0-->  boolean
+        if random_is_int_or_bool = 1:
+            v_index=randint(0,no_of_int_variables)
+        else :
+            v_index=randint(0,no_of_boolean_variables)
+
+        if random_index_is_int_or_bool = 0 :  ## boolean variable
+            current_values[0][v_index]=(current_values[0][v_index]-1)%2  # flip
+        else : ## integer variable
+            current_values[1][v_index]=gibbs(self)
+
+    def gibbs (self,v_index):
+
+    def project(self,v_index):
+        new_clause=clause()
+        old_clauses=formula.get_clauses() ##to be implemented
+        for old_clause in old_clauses:
+            old_int_literals=old_clause.get_int_literals()
+            for old_int_literal in old_int_literals:
+                
+        return new_clause
+        
+         
+
+    def sample_from(new_clause):
+            
+        
+            
+        
 
     def local_move(self):
        #############################
