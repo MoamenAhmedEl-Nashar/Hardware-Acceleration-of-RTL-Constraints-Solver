@@ -159,7 +159,7 @@ class Sampler:
     formula: MBINF
     temperature: float
     pls: float
-
+    # variables
     current_values_boolean = []
     current_values_integer = []
     
@@ -205,6 +205,11 @@ class Sampler:
 
     def metropolis_move(self):
 
+        no_of_integer_variables=self.formula.get_no_of_integer_variables()
+        no_of_boolean_variables=self.formula.get_no_of_boolean_variables()
+        integer_variable_names=self.formula.get_integer_variable_names()
+        boolean_variable_names=self.formula.get_boolean_variable_names()
+        #select variable boolean or integer
         random_index_is_int_or_bool=random.randint(0,1)    ## 1 --> int     0-->  boolean
         if random_is_int_or_bool == 1:
             v_index=randint(0,no_of_int_variables)
