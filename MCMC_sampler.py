@@ -327,13 +327,13 @@ class Sampler:
 integer_variable_names=['y1','y2']
 
 L1 = IntegerLiteral()
-L1.set_literal(2, integer_variable_names,[1, 1, -10])
+L1.set_literal(2, integer_variable_names,[1, 1, -100])
 
 L2 = IntegerLiteral()
-L2.set_literal(1, ['y1'],[1, -10])
+L2.set_literal(1, ['y1'],[1, -100])
 
 L3 = IntegerLiteral()
-L3.set_literal(1, ['y2'],[1, -10])
+L3.set_literal(1, ['y2'],[1, -100])
 
 C1 = Clause()
 C1.set_clause(0, 3, [], [L1,L2,L3])
@@ -344,11 +344,12 @@ sampler=Sampler(formula,1,1)
 sampler.make_random_assignment_integer()
 sampler.make_random_assignment_boolean()
 
-
-
-for i in range(0,99):
+#current=sampler.metropolis_move()
+#print(current)
+for i in range(0,10):
     current=sampler.metropolis_move()
-    if current[0]<=10 and current[1]<=10 and current[0]+current[1]<=10:
+    print(current)
+    if current[0]<=100 and current[1]<=100 and current[0]+current[1]<=100:
         print(current)
         print('iteration:',i)
         break

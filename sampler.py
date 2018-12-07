@@ -5,7 +5,7 @@ import math
 
 #################################
 random.seed(1)
-
+np.random.seed(1)
 
 ###classes difinition###
 
@@ -158,6 +158,9 @@ class MBINF:
 
     def get_clauses(self):
         return self.clauses
+    
+    def get_no_of_clauses(self):
+        return self.no_of_clauses
 
     def get_integer_variable_names(self):
         return self.integer_variable_names
@@ -207,16 +210,13 @@ class Sampler:
     # self.current_values = values
 
     def check_satisfiability(self):
-        i: int
-        j: int
-        k: int
-        m: int
-        for i in range(0, self.formula.no_of_clauses):
-            for j in range(0, self.formula.clauses[i].no_of_int_literals):
+        
+        for clause in self.formula.get_clauses():
+            for integer_literal in clause.get_int_literals() :
                 count = 0
-                for k in range(0, self.formula.no_of_integer_variables-1):
-                    count += self.formula.clauses[i].int_literals[j].coefficient[k]*self.current_values_integer[k]
-                count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
+                for k in range(0, integer_literal.get_no_of_variables()):
+                    count += integer_literal.coefficient[k] * self.current_values_integer[var_global_index]
+                count += integer_literal.coefficient[-1]
                 if count > 0:
                     return False
             for m in range(0, self.formula.clauses[i].no_of_boolean_literals):
@@ -224,19 +224,18 @@ class Sampler:
                     return False
         return True
     
-        def find_number_of_unsatisfied_clauses(self):
-        i: int
-        j: int
-        k: int
-        m: int
+    def find_number_of_unsatisfied_clauses(self):
+        
         no_of_unsatisfied_clauses = 0
-        for i in range(0, self.formula.no_of_clauses):
+        for clause in self.formula.get_clauses():
             flag = 0
-            for j in range(0, self.formula.clauses[i].no_of_int_literals):
+            for integer_literal in clause.get_int_literals():
                 count = 0
-                for k in range(0, self.formula.no_of_integer_variables - 1):
-                    count += self.formula.clauses[i].int_literals[j].coefficient[k] * self.current_values_integer[k]
-                count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
+                for k in range(0, integer_literal.get_no_of_variables()):
+                    var_name=integer_literal.variable_names[k]
+                    var_global_index=self.formula.integer_variable_names.index(var_name)
+                    count += integer_literal.coefficient[k] * self.current_values_integer[var_global_index]
+                count += integer_literal.coefficient[-1]
                 if count > 0:
                     no_of_unsatisfied_clauses += 1
                     flag = 1
@@ -244,9 +243,9 @@ class Sampler:
             if flag == 1:
                 continue
 
-            for m in range(0, self.formula.clauses[i].no_of_boolean_literals):
-                if self.current_values_boolean[self.formula.clauses[i].boolean_literals[m].number] != \
-                        self.formula.clauses[i].boolean_literals[m].value:
+            for boolean_literal in clause.get_boolean_literals():
+                if self.current_values_boolean[boolean_literal[m].number] != \
+                        boolean_literal[m].value:
                     no_of_unsatisfied_clauses += 1
                     break
         return no_of_unsatisfied_clauses
@@ -258,7 +257,7 @@ class Sampler:
     # this function computes temperature (the value that controls the probability p computed in metropolis move)
 
     def compute_temperature(self):
-        pass
+        self.temperature=1
 
     def propose(self, selected_integer_variable):
         no_of_integer_variables = self.formula.get_no_of_integer_variables()
@@ -353,13 +352,25 @@ class Sampler:
             selected_integer_variable = random.choice(integer_variable_names)
             index_of_selected_integer_variable = integer_variable_names.index(selected_integer_variable)
             proposed_value = self.propose(selected_integer_variable)
+            # save current integer assignment
+            last_current_values_integer=self.current_values_integer
             # update current integer assignment
             self.current_values_integer[index_of_selected_integer_variable] = proposed_value
             # Q calculating
-
+            Q=1
             # U calculating
-
-            return self.current_values_integer
+            U=self.find_number_of_unsatisfied_clauses()
+            nU=self.formula.get_no_of_clauses()-U
+            #take it or not
+            pr_do_change=min(1,Q*(math.exp(-((nU-U)/self.temperature))))
+            pr_stay=1-pr_do_change
+            choice=np.random.choice(['do_change','stay'], p=[pr_do_change,pr_stay])
+            if choice == 'stay':
+                self.current_values_integer=last_current_values_integer
+                return 'stayed',U,self.current_values_integer
+            elif choice == 'do_change':
+                #tha change is made already
+                return U,self.current_values_integer
 
     def local_move(self):
         pass
@@ -367,30 +378,30 @@ class Sampler:
 
 
 # test #
-L11 = BooleanLiteral()
-L11.set_literal(0, 1)
-L12 = BooleanLiteral()
-L12.set_literal(1, 0)
-L13 = IntegerLiteral()
-L13.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 3, 4, 1, 4])
-L13.print_int_literal()
-L21 = BooleanLiteral()
-L21.set_literal(2, 0)
-L22 = BooleanLiteral()
-L22.set_literal(3, 1)
-L23 = IntegerLiteral()
-L23.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 1, 0, 0, 2])
-C1 = Clause()
-C1.set_clause(2, 1, [L11, L12], [L13])
-C2 = Clause()
-C2.set_clause(2, 1, [L21, L22], [L23])
-MBINF1 = MBINF()
-MBINF1.set_formula(4, 4, ["X0", "X1", "X2", "X3"], ["Y0", "Y1", "Y2", "Y3"], 2, [C1, C2])
-MBINF1.print_formula()
-S1 = Sampler(MBINF1, 0, 0)
-S1.current_values_boolean = [1, 0, 0, 1]
-S1.current_values_integer = [1, 1, 0, 0]
-print(S1.check_satisfiability())
+##L11 = BooleanLiteral()
+##L11.set_literal(0, 1)
+##L12 = BooleanLiteral()
+##L12.set_literal(1, 0)
+##L13 = IntegerLiteral()
+##L13.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 3, 4, 1, 4])
+##L13.print_int_literal()
+##L21 = BooleanLiteral()
+##L21.set_literal(2, 0)
+##L22 = BooleanLiteral()
+##L22.set_literal(3, 1)
+##L23 = IntegerLiteral()
+##L23.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 1, 0, 0, 2])
+##C1 = Clause()
+##C1.set_clause(2, 1, [L11, L12], [L13])
+##C2 = Clause()
+##C2.set_clause(2, 1, [L21, L22], [L23])
+##MBINF1 = MBINF()
+##MBINF1.set_formula(4, 4, ["X0", "X1", "X2", "X3"], ["Y0", "Y1", "Y2", "Y3"], 2, [C1, C2])
+##MBINF1.print_formula()
+##S1 = Sampler(MBINF1, 0, 0)
+##S1.current_values_boolean = [1, 0, 0, 1]
+##S1.current_values_integer = [1, 1, 0, 0]
+##print(S1.check_satisfiability())
 
 
 
@@ -413,10 +424,17 @@ L3 = IntegerLiteral()
 L3.set_literal(1, ['y2'],[1, -10])
 
 C1 = Clause()
-C1.set_clause(0, 3, [], [L1,L2,L3])
+C1.set_clause(0, 1, [], [L1])
+C2 = Clause()
+C2.set_clause(0, 1, [], [L2])
+C3 = Clause()
+C3.set_clause(0, 1, [], [L3])
 
 formula = MBINF()
-formula.set_formula(0 , 2 , [] ,integer_variable_names , 1, [C1])
+formula.set_formula(0 , 2 , [] ,integer_variable_names , 3, [C1,C2,C3])
+
+
+
 sampler=Sampler(formula,1,1)
 sampler.make_random_assignment_integer()
 sampler.make_random_assignment_boolean()
@@ -425,10 +443,8 @@ sampler.make_random_assignment_boolean()
 
 for i in range(0,99):
     current=sampler.metropolis_move()
-    if current[0]<=10 and current[1]<=10 and current[0]+current[1]<=10:
-        print(current)
-        print('iteration:',i)
-        break
+    print(current)
+    
 #formula.print_formula()
 #print(L1.get_bias())
 #L1.print_int_literal()
