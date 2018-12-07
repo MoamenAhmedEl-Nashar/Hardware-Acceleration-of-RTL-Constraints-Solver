@@ -223,6 +223,33 @@ class Sampler:
                 if self.current_values_boolean[self.formula.clauses[i].boolean_literals[m].number] != self.formula.clauses[i].boolean_literals[m].value:
                     return False
         return True
+    
+        def find_number_of_unsatisfied_clauses(self):
+        i: int
+        j: int
+        k: int
+        m: int
+        no_of_unsatisfied_clauses = 0
+        for i in range(0, self.formula.no_of_clauses):
+            flag = 0
+            for j in range(0, self.formula.clauses[i].no_of_int_literals):
+                count = 0
+                for k in range(0, self.formula.no_of_integer_variables - 1):
+                    count += self.formula.clauses[i].int_literals[j].coefficient[k] * self.current_values_integer[k]
+                count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
+                if count > 0:
+                    no_of_unsatisfied_clauses += 1
+                    flag = 1
+                    break
+            if flag == 1:
+                continue
+
+            for m in range(0, self.formula.clauses[i].no_of_boolean_literals):
+                if self.current_values_boolean[self.formula.clauses[i].boolean_literals[m].number] != \
+                        self.formula.clauses[i].boolean_literals[m].value:
+                    no_of_unsatisfied_clauses += 1
+                    break
+        return no_of_unsatisfied_clauses
 
     # this function computes pls (the probability that determines which move to make"
     def compute_pls(self, iteration_number: int):
