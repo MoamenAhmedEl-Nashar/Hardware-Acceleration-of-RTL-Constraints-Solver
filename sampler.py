@@ -198,8 +198,8 @@ class Sampler:
     def make_random_assignment_integer(self):
         n = self.formula.get_no_of_integer_variables()
         for i in range(0, n):
-            self.current_values_integer.append(
-                random.randint(0, 1000))  # assume 1000 is the maximum number 'make an enhancement' !
+            self.current_values_integer.append(random.randint(0, 1000000))  # assume 1000000 is the maximum number 'make an enhancement' !
+        
 
     def make_random_assignment_boolean(self):
         n = self.formula.get_no_of_boolean_variables()
@@ -266,8 +266,8 @@ class Sampler:
         boolean_variable_names = self.formula.get_boolean_variable_names()
         # get the proposed value of this selected integer varaible
         clauses = self.formula.get_clauses()
-        first_bias = 1000
-        second_bias = 1001
+        first_bias = -1000000
+        second_bias = 0
         for clause in clauses:
             literals = clause.get_int_literals()
             for literal in literals:
@@ -275,9 +275,9 @@ class Sampler:
                 if reduced_literal != False:
                     bias = reduced_literal.get_bias()
                     if bias <= 0:  # -ve bias
-                        first_bias = min(bias, first_bias)
+                        first_bias = max(bias, first_bias)
                     elif bias > 0:  # +ve bias
-                        second_bias = min(bias, second_bias)
+                        second_bias = max(bias, second_bias)
         # construct weights for probability distribution segments(3 segments)
         c1 = -first_bias  # y<c1  ,  y> c2
         c2 = second_bias
@@ -357,7 +357,7 @@ class Sampler:
             # update current integer assignment
             self.current_values_integer[index_of_selected_integer_variable] = proposed_value
             # Q calculating
-            Q=1
+            Q=0.5
             # U calculating
             U=self.find_number_of_unsatisfied_clauses()
             nU=self.formula.get_no_of_clauses()-U
