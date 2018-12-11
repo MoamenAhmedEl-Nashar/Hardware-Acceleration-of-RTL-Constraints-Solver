@@ -411,7 +411,7 @@ class Sampler:
 
 
 
-### test ###
+### test ###  # y1<=10 , y2<=10 , y1+y2<=10 , no boolean , each clause contains one literal
 integer_variable_names=['y1','y2']
 
 L1 = IntegerLiteral()
@@ -441,7 +441,7 @@ sampler.make_random_assignment_boolean()
 
 
 
-for i in range(0,99):
+for i in range(0,40):
     current=sampler.metropolis_move()
     print(current)
     
