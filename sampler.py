@@ -5,8 +5,8 @@ import copy
 import math
 
 #################################
-random.seed(1)
-np.random.seed(1)
+random.seed(8)
+np.random.seed(8)
 
 ###classes difinition###
 
@@ -192,6 +192,9 @@ class Sampler:
 
     def set_pls(self, pls):
         self.pls = pls
+
+    def set_pls0(self, pls0):
+        self.pls0 = pls0
 
     def set_temperature(self, t):
         self.temperature = t
@@ -436,16 +439,24 @@ class Sampler:
         #make random assignments
         self.make_random_assignment_integer()
         self.make_random_assignment_boolean()
+        #set parameters
+        self.set_pls(1)
+        self.set_pls0(1)
         #metropolis
         current_integer=self.metropolis_move()
         counter=0
         while self.check_satisfiability()==False:
-            counter+=1
-            choice=np.random.choice(['local','metropolis'], p=[self.pls,1-self.pls])
             
+            counter+=1
+            
+            choice=np.random.choice(['local','metropolis'], p=[self.pls,1-self.pls])
+            #choice='metropolis'
             if choice == 'local':
+                print("local")
+                self.compute_pls(counter)
                 current_integer=self.local_move()
             elif choice == 'metropolis':
+                print("metropolis")
                 current_integer=self.metropolis_move()
             print(counter,current_integer)
         
