@@ -14,7 +14,7 @@ np.random.seed(1)
 # boolean literal can be x^k or !x^k
 class BooleanLiteral:
     number: int  # which is  k
-    value: int  # means x^k or !x^k
+    value: bool  # means x^k or !x^k
 
     def set_literal(self, number: int, value: int):
         self.number = number
@@ -130,7 +130,7 @@ class Clause:
 # " clause[0] & clause[1] & clause[2] & ... & clause[m] "
 
 
-class MBINF:
+class MBINF: # Mixed Boolean Integer from
     no_of_integer_variables: int
     no_of_boolean_variables: int
     integer_variable_names: [str]
@@ -216,6 +216,8 @@ class Sampler:
             for integer_literal in clause.get_int_literals():
                 count = 0
                 for k in range(0, integer_literal.get_no_of_variables()):
+                    var_name = integer_literal.variable_names[k]
+                    var_global_index = self.formula.integer_variable_names.index(var_name)
                     count += integer_literal.coefficient[k] * self.current_values_integer[var_global_index]
                 count += integer_literal.coefficient[-1]
                 if count > 0:
@@ -225,6 +227,27 @@ class Sampler:
                         self.formula.clauses[i].boolean_literals[m].value:
                     return False
         return True
+
+    def check_clause(self,index:int,clause_type:bool): # clause_type = 0 'int' , = 1 'bool'
+
+        clause = self.formula.clauses[index]
+
+        if clause_type:
+            pass
+
+        else:
+            for integer_literal in clause.get_int_literals():
+                count = 0
+                for k in range(0, integer_literal.get_no_of_variables()):
+                    var_name = integer_literal.variable_names[k]
+                    var_global_index = self.formula.integer_variable_names.index(var_name)
+                    count += integer_literal.coefficient[k] * self.current_values_integer[var_global_index]
+                count += integer_literal.coefficient[-1]
+                if count > 0:
+                    return False
+                else:
+                    return True
+
 
     def find_number_of_unsatisfied_clauses(self):
 
@@ -246,8 +269,8 @@ class Sampler:
                 continue
 
             for boolean_literal in clause.get_boolean_literals():
-                if self.current_values_boolean[boolean_literal[m].number] != \
-                        boolean_literal[m].value:
+                if self.current_values_boolean[boolean_literal.number] != \
+                        boolean_literal.value:
                     no_of_unsatisfied_clauses += 1
                     break
         return no_of_unsatisfied_clauses
@@ -374,41 +397,42 @@ class Sampler:
                 # tha change is made already
                 return U, self.current_values_integer
 
-    def local_move(self,Pg): #Pg is greediness parameter and it is a probability
 
+    def local_move(self):
         #1 select unsatisﬁed clause C ∈ ϕ uniformly at random
-        n = self.find_number_of_unsatisfied_clauses()
-        c_set = []
-        for clause in self.formula.get_clauses():
-            flag = 0
-            # this part for finding the unsatisfied clause
-            for integer_literal in clause.get_int_literals():
-                count = 0
-                for k in range(0, integer_literal.get_no_of_variables()):
-                    var_name = integer_literal.variable_names[k]
-                    var_global_index = self.formula.integer_variable_names.index(var_name)
-                    count += integer_literal.coefficient[k] * self.current_values_integer[var_global_index]
-                count += integer_literal.coefficient[-1]
-                if count > 0:
-                    c_set.append(var_global_index)
+        c_set = [] #unsatisfied clauses
+        all_clauses = self.formula.get_clauses()
+        for i in range(len(all_clauses)):
+            if (self.check_clause(i, 0)):
+                c_set.append(i)
+        c_index = random.choice(c_set)
+        unsatisfied_clause = self.formula.clauses[c_index]
 
-        c = random.choice(c_set)
+        # boolean part
 
-        #2 determine to use greedy or not
-        u = random.random() # random value from [0.0,1)
-        if(u < Pg):
-            for literal in self.formula.clauses[c]:
-                pass
-                #new assignment = FlipLiteral(l)
-            #index = min_U(y)
-            #return (y[index])
-        else:
-            pass
-            # all_literals_in_c = self.formulla.c
-            # l = random.choice(c_set)
-            #return FlipLitereal(l)
+        '''
+        min_bool : int
+        for i in range (len(unsatisfied_clause.boolean_literals)):
+            unsatisfied_clause.boolean_literals[i].value =~ unsatisfied_clause.boolean_literals[i].value
+            value = self.formula.find_number_of_unsatisfied_clauses()
+            if (i == 0):
+                min_bool = value
+            elif (value < min_bool):
+                min_bool = value
+        '''
 
-
+        # integer part
+        min_int: int
+        for i in range(len(unsatisfied_clause.int_literals)):
+            variable_names = unsatisfied_clause.int_literals[i].variable_names
+            #select a uniform random variable that is involved in this literal
+            name = random.choice(variable_names)
+            last_current_values_integer = self.current_values_integer
+            old_number = self.formula.find_number_of_unsatisfied_clauses()
+            self.current_values_integer[name] = self.propose(name)
+            new_number = self.formula.find_number_of_unsatisfied_clauses()
+            if (old_number<new_number):
+                self.current_values_integer = last_current_values_integer
 
 
 
