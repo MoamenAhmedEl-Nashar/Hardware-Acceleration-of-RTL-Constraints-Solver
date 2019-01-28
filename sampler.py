@@ -1,17 +1,20 @@
-
+############################################ importing packages ##########################################################
 import numpy as np
 import random
 import copy
 import math
+###########################################################################################################################
 
-#################################
-random.seed(8)
-np.random.seed(8)
+########################################## seed choosing ##################################################################
+SEED=1
+random.seed(SEED)
+np.random.seed(SEED)
+###########################################################################################################################
 
-###classes difinition###
-
+######################################## defining classes to represent constraints#########################################
 
 # boolean literal can be x^k or !x^k
+# boolean literal is not needed in this version of code
 class BooleanLiteral:
     number: int  # which is  k
     value: bool  # means x^k or !x^k
@@ -30,8 +33,8 @@ class BooleanLiteral:
             print(" !x^", self.number, sep=' ', end='', flush=True)
 
 
-# integral literal is in form :
-# "coefficient[0] * y^0 + coefficient[1] * y^1+.....+ bias <= 0"
+# integral literal is the linear form to represent constraints
+# integral literal is in form :"coefficient[0] * y^0 + coefficient[1] * y^1+.....+ bias <= 0"
 
 class IntegerLiteral:
     no_of_int_variables: int
@@ -83,8 +86,8 @@ class IntegerLiteral:
             return False  # this variable is not found in that literal
 
 
-# clause is in form
-# "integer_literal[0] | integral_literal[1] | ... | boolean_literal[0] | boolean_literal[1] | ... "
+# clause is not needed in this version of code , clause must contain one integer literal only
+# clause is in form : "integer_literal[0] | integral_literal[1] | ... | boolean_literal[0] | boolean_literal[1] | ... "
 
 
 class Clause:
@@ -126,7 +129,7 @@ class Clause:
                 print(" ] ", sep=' ', end='', flush=True)
 
 
-# MBINF formula is in form
+# MBINF (Mixed Boolean Integer Formula)  is in form:
 # " clause[0] & clause[1] & clause[2] & ... & clause[m] "
 
 
@@ -174,16 +177,23 @@ class MBINF:
 
     def get_no_of_boolean_variables(self):
         return self.no_of_boolean_variables
-
+    
+'''
+class sampler contain all functions for constraint solving
+'''
 
 class Sampler:
     formula: MBINF
+    # temperature and pls are  adjusting and optimazing variables
     temperature: float
     pls: float
     pls0: float
     # variables
     current_values_boolean = []
     current_values_integer = []
+    """
+    initialize member variables in the class
+    """
 
     def __init__(self, formula: MBINF, T, pls):
         self.formula = formula
@@ -198,13 +208,17 @@ class Sampler:
 
     def set_temperature(self, t):
         self.temperature = t
-
+    '''
+    assign random values to constraints
+    '''
     def make_random_assignment_integer(self):
         n = self.formula.get_no_of_integer_variables()
         for i in range(0, n):
             self.current_values_integer.append(random.randint(0, 1000000))  # assume 1000000 is the maximum number 'make an enhancement' !
         
-
+    '''
+    assign random values to constraints
+    '''
     def make_random_assignment_boolean(self):
         n = self.formula.get_no_of_boolean_variables()
         for i in range(0, n):
@@ -213,6 +227,9 @@ class Sampler:
     # def set_values(self, values: [[int], [int]]):
     # self.current_values = values
 
+    '''
+    check satisfiability of all constraints
+    '''
     def check_satisfiability(self):
         
         for clause in self.formula.get_clauses():
@@ -230,7 +247,9 @@ class Sampler:
                     return False
         return True
 
-
+    '''
+    check satisfiability of one specific clause(one constraint in this version of code)
+    '''
     def check_clause(self,index:int): 
 
         clause = self.formula.clauses[index]
@@ -245,7 +264,9 @@ class Sampler:
                 return False
             else:
                 return True
-
+    '''
+    find_number_of_unsatisfied_clauses
+    '''
     def find_number_of_unsatisfied_clauses(self):
         
         no_of_unsatisfied_clauses = 0
@@ -280,7 +301,9 @@ class Sampler:
 
     def compute_temperature(self):
         self.temperature=1
-
+    '''
+    propose value for a randomly selected variable
+    '''
     def propose(self, selected_integer_variable):
         no_of_integer_variables = self.formula.get_no_of_integer_variables()
         no_of_boolean_variables = self.formula.get_no_of_boolean_variables()
@@ -348,7 +371,9 @@ class Sampler:
                 proposed_value = mid + d
 
         return proposed_value
-
+    '''
+    change current assingment to another based on metrobolis move
+    '''
     def metropolis_move(self):
 
         no_of_integer_variables = self.formula.get_no_of_integer_variables()
@@ -393,7 +418,9 @@ class Sampler:
             elif choice == 'do_change':
                 #tha change is made already
                 return self.current_values_integer
-
+    '''
+    change current assingment to another based on local move
+    '''
     def local_move(self):
         #1 select unsatisﬁed clause C ∈ ϕ uniformly at random
         unsatisfied_clauses = [] #unsatisfied clauses
@@ -434,7 +461,9 @@ class Sampler:
                 
         return self.current_values_integer
 
-
+    '''
+    solve the constraint set and output one solution
+    '''
     def sample(self):
         #make random assignments
         self.make_random_assignment_integer()
@@ -472,7 +501,8 @@ class Sampler:
 
 
 
-### test ###  # y1<=10 , y2<=10 , y1+y2<=10 , no boolean , each clause contains one literal
+### test cases ### no boolean , each clause contains one literal
+### test case 1 #### y1<=10 , y2<=10 , y1+y2<=10 ,
 integer_variable_names=['y1','y2']
 
 L1 = IntegerLiteral()
