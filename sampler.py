@@ -12,21 +12,22 @@ random.seed(1)
 
 # boolean literal can be x^k or !x^k
 class BooleanLiteral:
-    number: int  # which is  k
+    variable_name: str   # X1,X2,X3
+    # number: int  # which is  k
     value: int  # means x^k or !x^k
 
-    def set_literal(self, number: int, value: int):
-        self.number = number
+    def set_literal(self, variable_name: str, value: int):
+        self.variable_name = variable_name
         self.value = value
 
     def get_literal(self):
-        return [self.number, self.value]
+        return [self.variable_name, self.value]
 
     def print_boolean_literal(self):
         if self.value == 1:
-            print(" x^", self.number, sep=' ', end='', flush=True)
+            print(self.variable_name, sep=' ', end='', flush=True)
         else:
-            print(" !x^", self.number, sep=' ', end='', flush=True)
+            print("!", self.variable_name, sep=' ', end='', flush=True)
 
 
 # integral literal is in form :
@@ -37,10 +38,17 @@ class IntegerLiteral:
     variable_names: [str]
     coefficient: [int]
 
-    def set_literal(self, no_of_int_variables, variable_names, coefficient: [int]):
-        self.no_of_int_variables = no_of_int_variables  # number of int_variables  [y1,y2,....,y3]
-        self.variable_names = variable_names  # y2,y1,y3,y5
+    def __init__(self, variable_names, no_of_int_variables):
+        self.no_of_int_variables = no_of_int_variables
+        self.variable_names = variable_names
+
+    def set_literal(self, coefficient: [int]):
         self.coefficient = coefficient  # coefficient is a set of integers
+
+# # to set a coieffetient of Y(index) # #
+    def set_coeff(self,var_name,value):
+        var_index = int(var_name[1])
+        self.coefficient[var_index] = value
 
     def get_no_of_variables(self):
         return self.no_of_int_variables
@@ -63,6 +71,7 @@ class IntegerLiteral:
                 print(self.coefficient[i], sep=' ', end='', flush=True)
         print(" <= 0 ")
 
+    # it takes one variable in a literal (X1) and reduce it to X1+BIAS<=0
     def reduce_literal(self, current_assignment: [int], variable_to_be_unchanged):
         reduced_integer_literal = IntegerLiteral()
         reduced_integer_literal = copy.deepcopy(self)
@@ -87,17 +96,21 @@ class IntegerLiteral:
 
 
 class Clause:
-    no_of_boolean_literals: int
     no_of_int_literals: int
-    boolean_literals: [BooleanLiteral]  # is a set if literals
     int_literals = [IntegerLiteral]  # is a set of literals
+    int_variable_names: [str]
+    no_of_int_variables: int
 
-    def set_clause(self, no_of_boolean_literals: int, no_of_int_literals: int, boolean_literals: [BooleanLiteral],
-                   int_literals: [IntegerLiteral]):
-        self.no_of_boolean_literals = no_of_boolean_literals
-        self.no_of_int_literals = no_of_int_literals
-        self.boolean_literals = boolean_literals  # is a set if literals
-        self.int_literals = int_literals  # is a set of literals
+    def __init__(self, int_variable_names, no_of_int_variables):
+        self.int_variable_names = int_variable_names
+        self.no_of_int_variables = no_of_int_variables
+        self.no_of_boolean_literals = 0
+        self.no_of_int_literals = 0
+        self.int_literals = [IntegerLiteral(self.int_variable_names, self.no_of_int_variables) for i in range(0, 20)]
+
+    def add_int_literal(self, literal_coeff):
+        self.int_literals[self.no_of_int_literals].set_literal(literal_coeff)
+        self.no_of_int_literals = self.no_of_int_literals + 1
 
     def get_no_of_int_literals(self):
         return self.no_of_int_literals
@@ -113,20 +126,16 @@ class Clause:
 
     def print_clause(self):
         print(" [ ", sep=' ', end='', flush=True)
-        for i in range(0, self.no_of_int_literals):
+        for i in range(0, self.no_of_int_literals - 1):
             self.int_literals[i].print_int_literal()
             print("|", sep=' ', end='', flush=True)
-
-        for i in range(0, self.no_of_boolean_literals):
-            self.boolean_literals[i].print_boolean_literal()
-            if i != self.no_of_boolean_literals - 1:
-                print(" | ", sep=' ', end='', flush=True)
-            else:
-                print(" ] ", sep=' ', end='', flush=True)
+        self.int_literals[self.no_of_int_literals-1].print_int_literal()
+        print("]")
 
 
-# MBINF formula is in form
-# " clause[0] & clause[1] & clause[2] & ... & clause[m] "
+# # MBINF formula is in form
+
+# #" clause[0] & clause[1] & clause[2] & ... & clause[m] "
 
 
 class MBINF:
@@ -137,27 +146,35 @@ class MBINF:
     no_of_clauses: int
     clauses = [Clause]
 
-    def set_formula(self, no_of_boolean_variables, no_of_integer_variables, boolean_variable_names,
-                    integer_variable_names, no_of_clauses, clauses):
-        self.no_of_integer_variables = no_of_integer_variables
-        self.no_of_boolean_variables = no_of_boolean_variables
-        self.integer_variable_names = integer_variable_names
-        self.boolean_variable_names = boolean_variable_names
-        self.no_of_clauses = no_of_clauses
-        self.clauses = clauses
+    def __init__(self, no_of_int_variables):
+        self.no_of_boolean_variables = 0
+        self.no_of_integer_variables = no_of_int_variables
+        self.no_of_clauses = 0
+        count = '0'
+        ### initialize variable names ###
+        self.integer_variable_names = ['Y'+chr((ord(count) + i)) for i in range(0, no_of_int_variables)]
+        ## initialize clauses ##
+        self.clauses = [Clause(self.integer_variable_names, self.no_of_integer_variables) for i in range(0, 50)]
+
+    def add_clause(self, first_literal_coeff):
+        self.clauses[self.no_of_clauses].add_int_literal(first_literal_coeff)
+        self.no_of_clauses = self.no_of_clauses + 1
+
+    def add_literal_to_clause(self, index, coeff: [int]):
+        self.clauses[index].add_int_literal(coeff)
 
     def print_formula(self):  # to be edited
 
         print("Y=", self.no_of_integer_variables, "X=", self.no_of_boolean_variables, "C=", self.no_of_clauses)
-        print("MBINF formula = ", sep=' ', end='', flush=True)
+        print("MBINF formula = ")
 
         for i in range(0, self.no_of_clauses):
             self.clauses[i].print_clause()
             if i != self.no_of_clauses - 1:
-                print("&", sep=' ', end='', flush=True)
+                print("&")
 
-    def get_clauses(self):
-        return self.clauses
+    def get_clause(self, index):
+        return self.clauses[index]
 
     def get_integer_variable_names(self):
         return self.integer_variable_names
@@ -177,12 +194,12 @@ class Sampler:
     temperature: float
     pls: float
     pls0: float
-    # variables
+# # variables
     current_values_boolean = []
     current_values_integer = []
 
-    def __init__(self, formula: MBINF, T, pls):
-        self.formula = formula
+    def __init__(self, T, pls):
+        self.formula = get_input()
         self.temperature = T
         self.pls = pls
 
@@ -203,14 +220,7 @@ class Sampler:
         for i in range(0, n):
             self.current_values_boolean.append(random.randint(0, 1))
 
-    # def set_values(self, values: [[int], [int]]):
-    # self.current_values = values
-
     def check_satisfiability(self):
-        i: int
-        j: int
-        k: int
-        m: int
         for i in range(0, self.formula.no_of_clauses):
             for j in range(0, self.formula.clauses[i].no_of_int_literals):
                 count = 0
@@ -219,43 +229,32 @@ class Sampler:
                 count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
                 if count > 0:
                     return False
-            for m in range(0, self.formula.clauses[i].no_of_boolean_literals):
-                if self.current_values_boolean[self.formula.clauses[i].boolean_literals[m].number] != self.formula.clauses[i].boolean_literals[m].value:
-                    return False
         return True
-    
-        def find_number_of_unsatisfied_clauses(self):
-        i: int
-        j: int
-        k: int
-        m: int
-        no_of_unsatisfied_clauses = 0
-        for i in range(0, self.formula.no_of_clauses):
-            flag = 0
-            for j in range(0, self.formula.clauses[i].no_of_int_literals):
-                count = 0
-                for k in range(0, self.formula.no_of_integer_variables - 1):
-                    count += self.formula.clauses[i].int_literals[j].coefficient[k] * self.current_values_integer[k]
-                count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
-                if count > 0:
-                    no_of_unsatisfied_clauses += 1
-                    flag = 1
-                    break
-            if flag == 1:
-                continue
 
-            for m in range(0, self.formula.clauses[i].no_of_boolean_literals):
-                if self.current_values_boolean[self.formula.clauses[i].boolean_literals[m].number] != \
-                        self.formula.clauses[i].boolean_literals[m].value:
-                    no_of_unsatisfied_clauses += 1
-                    break
-        return no_of_unsatisfied_clauses
+    def find_number_of_unsatisfied_clauses(self):
+            no_of_unsatisfied_clauses = 0
+            for i in range(0, self.formula.no_of_clauses):
+                flag = 0
+                for j in range(0, self.formula.clauses[i].no_of_int_literals):
+                    count = 0
+                    for k in range(0, self.formula.no_of_integer_variables - 1):
+                        count += self.formula.clauses[i].int_literals[j].coefficient[k] * self.current_values_integer[k]
+                    count -= self.formula.clauses[i].int_literals[j].coefficient[self.formula.no_of_integer_variables]
+                    if count > 0:
+                        no_of_unsatisfied_clauses += 1
+                        flag = 1
+                        break
+                if flag == 1:
+                    continue
 
-    # this function computes pls (the probability that determines which move to make"
+            return no_of_unsatisfied_clauses
+
+# # this function computes pls (the probability that determines which move to make"
+
     def compute_pls(self, iteration_number: int):
         self.pls = self.pls0 * math.exp(1-iteration_number)
 
-    # this function computes temperature (the value that controls the probability p computed in metropolis move)
+# # this function computes temperature (the value that controls the probability p computed in metropolis move)
 
     def compute_temperature(self):
         pass
@@ -364,33 +363,69 @@ class Sampler:
     def local_move(self):
         pass
 
+# # a function to read the formula from text file # #
 
 
-# test #
-L11 = BooleanLiteral()
-L11.set_literal(0, 1)
-L12 = BooleanLiteral()
-L12.set_literal(1, 0)
-L13 = IntegerLiteral()
-L13.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 3, 4, 1, 4])
-L13.print_int_literal()
-L21 = BooleanLiteral()
-L21.set_literal(2, 0)
-L22 = BooleanLiteral()
-L22.set_literal(3, 1)
-L23 = IntegerLiteral()
-L23.set_literal(4, ["Y0", "Y1", "Y2", "Y3"], [1, 1, 0, 0, 2])
-C1 = Clause()
-C1.set_clause(2, 1, [L11, L12], [L13])
-C2 = Clause()
-C2.set_clause(2, 1, [L21, L22], [L23])
-MBINF1 = MBINF()
-MBINF1.set_formula(4, 4, ["X0", "X1", "X2", "X3"], ["Y0", "Y1", "Y2", "Y3"], 2, [C1, C2])
-MBINF1.print_formula()
-S1 = Sampler(MBINF1, 0, 0)
-S1.current_values_boolean = [1, 0, 0, 1]
-S1.current_values_integer = [1, 1, 0, 0]
-print(S1.check_satisfiability())
+def get_input():
+    input_file = open("F:\\graduation\\input", "r")
+    no_of_variables = int(input_file.readline())
+    formula = MBINF(no_of_variables)
+    it_is_the_first_literal_in_clause = 1
+    literal_count = 0
+    clause_count = 0
+    while 1:
+        literal = input_file.readline()
+        coeff = [0 for i in range(0, no_of_variables+1)]
+        if not literal:
+            break
+        else:
+            literal_list = literal.split()
+            i = 0
+            while i < len(literal_list):
+                if literal_list[i] == '+':
+                    i = i+1
+                    var_name = literal_list[i+1]
+                    coeff[int(var_name[1])] = int(literal_list[i])
+                    i = i + 2
+                    #print(i)
+
+                elif literal_list[i] == '-':
+                    i = i + 1
+                    var_name = literal_list[i + 1]
+                    coeff[int(var_name[1])] = - int(literal_list[i])
+                    i = i + 2
+
+                elif literal_list[i][0].isdigit():
+                    var_name = literal_list[i + 1]
+                    coeff[int(var_name[1])] = int(literal_list[i])
+                    i = i + 2
+                    #print(i)
+
+                elif literal_list[i] == '<=':
+                    i = i + 1
+                    #print(literal_list[i])
+                    coeff[no_of_variables] = - int(literal_list[i])
+                    i = i + 1
+                else:
+                    break
+
+            if it_is_the_first_literal_in_clause:
+                    formula.add_clause(coeff)
+                    clause_count = clause_count + 1
+                    literal_count = 1
+            else:
+                    formula.add_literal_to_clause(clause_count-1, coeff)
+                    literal_count = literal_count + 1
+            temp = input_file.readline()
+            if not temp:
+                break
+            if temp.strip() == 'or':
+                it_is_the_first_literal_in_clause = 0
+
+            elif temp.strip() == "and":
+                it_is_the_first_literal_in_clause = 1
+
+    return formula
 
 
 
@@ -400,37 +435,11 @@ print(S1.check_satisfiability())
 
 
 
-### test ###
-integer_variable_names=['y1','y2']
-
-L1 = IntegerLiteral()
-L1.set_literal(2, integer_variable_names,[1, 1, -10])
-
-L2 = IntegerLiteral()
-L2.set_literal(1, ['y1'],[1, -10])
-
-L3 = IntegerLiteral()
-L3.set_literal(1, ['y2'],[1, -10])
-
-C1 = Clause()
-C1.set_clause(0, 3, [], [L1,L2,L3])
-
-formula = MBINF()
-formula.set_formula(0 , 2 , [] ,integer_variable_names , 1, [C1])
-sampler=Sampler(formula,1,1)
-sampler.make_random_assignment_integer()
-sampler.make_random_assignment_boolean()
 
 
 
-for i in range(0,99):
-    current=sampler.metropolis_move()
-    if current[0]<=10 and current[1]<=10 and current[0]+current[1]<=10:
-        print(current)
-        print('iteration:',i)
-        break
-#formula.print_formula()
-#print(L1.get_bias())
-#L1.print_int_literal()
-#new=L1.reduce_literal([11,11],'y1')
-#new.print_int_literal()
+
+
+
+
+
