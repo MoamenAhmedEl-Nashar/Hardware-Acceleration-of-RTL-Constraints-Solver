@@ -11,9 +11,9 @@ constraints on input format
 <h3>Ex:</h3>
 <div>
 2 <br>
-1 y0 + 1 y1 <= 10
-and
-1 y0 <= 10
-and
-1 y1 <= 10
+1 y0 + 1 y1 <= 15 <br>
+and <br>
+1 y0 <= 10 <br>
+and <br>
+- 1 y1 <= -10 <br>
          </div>
