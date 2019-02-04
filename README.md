@@ -10,7 +10,7 @@ constraints on input format
 - for a number it should be -1 not -1
 <h3>Ex:</h3>
 <div>
-2
+2 <br>
 1 y0 + 1 y1 <= 10
 and
 1 y0 <= 10
