@@ -1,7 +1,7 @@
 # Hardware-Acceleration-of-RTL-Constraints-Solver
 
 -------------- Input example should be a text file named "input.txt" -------------------------
-<br>constraints on input format
+<br>constraints on input format:
 - must be more than one constraint
 - and constraints only
 - integral variables only
