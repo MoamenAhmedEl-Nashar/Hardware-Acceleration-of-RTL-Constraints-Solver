@@ -726,10 +726,12 @@ class Sampler:
     def sample(self):
         #make random assignments
         self.make_random_assignment_integer()
+        print('random',self.current_values_integer)
         #self.make_random_assignment_boolean()
         #metropolis
         current_integer=self.metropolis_move()
-        counter=0
+        counter=1
+        print(counter,current_integer)
 
         while self.check_satisfiability()==False: #problem here
             counter+=1
