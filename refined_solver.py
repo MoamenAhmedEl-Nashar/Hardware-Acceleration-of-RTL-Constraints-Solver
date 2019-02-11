@@ -133,7 +133,7 @@ current_values_bool=[]
 ##########################################################################################
 
 def compute_pls(iteration_number):
-    pls = self.PLS0 * math.exp(1-iteration_number)
+    pls = PLS0 * math.exp(1-iteration_number)
     if (pls>1):
         pls = 1
     elif (pls <0):
@@ -518,7 +518,8 @@ def local_move():
     
     # int part
     for k in range(NUM_OF_INT_LITERALS):
-        #select random variable that is involved in this literal
+        
+        
         int_variables_in_literal=[]
         selected_unsatisfied_clause=[]
         first_c=selected_unsatisfied_clause_index *CLAUSE_NUM_OF_ROWS
@@ -529,27 +530,32 @@ def local_move():
         first=(k*INT_LITERAL_NUM_OF_ROWS)+BOOL_LITERAL_NUM_OF_ROWS
         last=first+INT_LITERAL_NUM_OF_ROWS
         int_literal=selected_unsatisfied_clause[first:last]
-        for m in range(NUM_OF_INT_VARIABLES):
-            if int_literal[m]!=0:
-                int_variables_in_literal.append(m)
-        selected_int_variable_index = random.choice(int_variables_in_literal)
         
-        # save current int assignment
-        last_current_values_int = current_values_int
-        
-        old_number = find_number_of_unsatisfied_clauses()
-        
-        current_values_int[selected_int_variable_index] = propose(selected_int_variable_index)
-        new_number = find_number_of_unsatisfied_clauses()
-        if (old_number<new_number):
-            current_values_int = last_current_values_int
+        if is_int_literal_exist(int_literal)==True:
+            #select random variable that is involved in this literal
+            for m in range(NUM_OF_INT_VARIABLES):
+                if int_literal[m]!=0:
+                    int_variables_in_literal.append(m)
+            selected_int_variable_index = random.choice(int_variables_in_literal)
+            
+            # save current int assignment
+            last_current_values_int = current_values_int
+            
+            old_number = find_number_of_unsatisfied_clauses()
+            
+            current_values_int[selected_int_variable_index] = propose(selected_int_variable_index)
+            new_number = find_number_of_unsatisfied_clauses()
+            if (old_number<new_number):
+                current_values_int = last_current_values_int
+        else :
+            continue
             
     return current_values_int
 
 def solver():
     #make random assignments
     make_random_assignment_int()
-    print('random',self.current_values_int)
+    print('random',current_values_int)
     make_random_assignment_bool()
     #metropolis
     current_int=metropolis_move()
@@ -578,3 +584,4 @@ current_values_bool=[1]
 #s,w=select_segment([5,10,1,10,20,3],2)
 #print(s,w)
 #print(propose_from_segment(s,w))
+
