@@ -5,6 +5,7 @@ from datetime import datetime
 SEED=1
 random.seed(SEED)
 np.random.seed(SEED)
+
 ###########################################################################################################################
 
 def main():
