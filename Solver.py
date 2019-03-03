@@ -390,11 +390,46 @@ class Solver:
 
 
 
+ '''      
+    def get_indicator(self,reduced_int_literal,index_variable_to_be_unchanged): #[1 0 0 5] or [0 -1 0 3]
+        
+        maximum=math.pow(2,self.bit_width_for_int_variables[index_variable_to_be_unchanged]-1)-1
+        minimum=-math.pow(2,self.bit_width_for_int_variables[index_variable_to_be_unchanged]-1)-1
+
+        indicator= Indicator()       
+        distribution = Distribution() 
+        if reduced_int_literal[index_variable_to_be_unchanged]==1:
+            # minimum --> -bias
+            indicator._from = minimum
+            indicator._to = -reduced_int_literal[-1]   
+            indicator._type = UNIFORM
+            distribution.indicators.append(indicator)
+            # -bias --> maximum
+            indicator._from = -reduced_int_literal[-1]
+            indicator._to = maximum 
+            indicator._type = EXP_DOWN
+            distribution.indicators.append(indicator)
+
+        if reduced_int_literal[index_variable_to_be_unchanged]==-1:
+            # minimum --> bias
+            indicator._from = minimum
+            indicator._to = reduced_int_literal[-1] 
+            indicator._type = EXP_UP
+            distribution.indicators.append(indicator)
+            # bias --> maximum
+            indicator._from = reduced_int_literal[-1]
+            indicator._to = maximum
+            indicator._type = UNIFORM
+            distribution.indicators.append(indicator)
+
+        return distribution
+    '''
 
 
 
 
 
+'''
 myClause = Clause(2,3)
 myClause.add_integer_literal([1,1,1,4])
 myClause.add_integer_literal([11,22,33,44])
@@ -415,3 +450,4 @@ mySolver.formula.append(myClause1)
 mySolver.formula[0].print_clause()
 
 print(mySolver.reduce_literal(0,0,1))
+'''
