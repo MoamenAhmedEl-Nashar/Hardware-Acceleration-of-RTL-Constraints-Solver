@@ -16,13 +16,12 @@ Although our local-search moves are based on the same distributions as our Metro
  so they distort the stationary distribution away from the target distribution.
 """
 
-
-
 ############################################ importing packages ##########################################################
 import numpy as np
 import random
 import copy
 import math
+from Clause_Class import Clause
 ###########################################################################################################################
 
 
@@ -35,50 +34,6 @@ UNIFORM=3
 EXP_UP=2
 EXP_DOWN=1
 #########
-class Clause:
-    number_of_integer_literal = int
-    boolean_literals = []
-    integer_literals = []
-    number_of_boolean_variables = int
-    number_of_integer_variables = int
-
-    def __init__(self, number_of_boolean_variables, number_of_integer_variables):
-        self.number_of_boolean_variables = number_of_boolean_variables
-        self.number_of_integer_variables = number_of_integer_variables
-        self.boolean_literals = [ [0,0] for i in range(0, self.number_of_boolean_variables) ]
-        self.number_of_integer_literal = 0
-
-    def add_integer_literal(self, coefficients):
-        self.integer_literals.append(coefficients)
-        self.number_of_integer_literal = self.number_of_integer_literal + 1
-
-    def add_boolean_literal(self, index, coeff):
-        if coeff:
-            self.boolean_literals[index] = [1,1]
-        else:
-            self.boolean_literals[index] = [1,0]
-
-    def print_clause(self):
-        #print(self.number_of_integer_literal)
-        #print(self.integer_literals)
-        for i in range(0, self.number_of_integer_literal):
-            for j in range (0, self.number_of_integer_variables):
-                print(self.integer_literals[i][j], "Y", j, " + ", sep=' ', end='', flush=True)
-            print(self.integer_literals[i][self.number_of_integer_variables]," <= 0")
-            if i != self.number_of_integer_literal - 1:
-                print("OR")
-
-        for j in range(0, self.number_of_boolean_variables):
-            if self.boolean_literals[j] == 1:
-                print("OR")
-                print("! X", j)
-
-            elif self.boolean_literals[j] == 3:
-                print("OR")
-                print("X", j)
-
-
-
 class Solver:
     formula = []
     current_values_int = []
@@ -147,13 +102,13 @@ class Solver:
         return True
 
     def find_number_of_unsatisfied_clauses(self,assignme_to_check_on_it):
-        buffer=self.current_values_int
+        buffer=copy.deepcopy(self.current_values_int)
         self.current_values_int=assignme_to_check_on_it
         count=0
         for i in range(self.number_of_clauses):
            if self.check_clause(i) == False:
                count=count+1
-        self.current_values_int=buffer
+        self.current_values_int=copy.deepcopy(buffer)
         return count
 
     def compute_pls(self,iteration_number):
@@ -318,6 +273,7 @@ class Solver:
             _type="integer"
             chosen_var = random.choice(range(self.number_of_integer_variables))
         return chosen_var,_type
+
     def calculate_proposed_distribution(self):
         # we shoud here calculate Q ˜ p(x,y) in the thesis page 18
         # but right now we hard coded just to 0.5
@@ -384,70 +340,3 @@ class Solver:
                 print("metropolis")
                 self.metropolis_move()
             print(counter,self.current_values_int)
-
-
-
-
-
-
- '''      
-    def get_indicator(self,reduced_int_literal,index_variable_to_be_unchanged): #[1 0 0 5] or [0 -1 0 3]
-        
-        maximum=math.pow(2,self.bit_width_for_int_variables[index_variable_to_be_unchanged]-1)-1
-        minimum=-math.pow(2,self.bit_width_for_int_variables[index_variable_to_be_unchanged]-1)-1
-
-        indicator= Indicator()       
-        distribution = Distribution() 
-        if reduced_int_literal[index_variable_to_be_unchanged]==1:
-            # minimum --> -bias
-            indicator._from = minimum
-            indicator._to = -reduced_int_literal[-1]   
-            indicator._type = UNIFORM
-            distribution.indicators.append(indicator)
-            # -bias --> maximum
-            indicator._from = -reduced_int_literal[-1]
-            indicator._to = maximum 
-            indicator._type = EXP_DOWN
-            distribution.indicators.append(indicator)
-
-        if reduced_int_literal[index_variable_to_be_unchanged]==-1:
-            # minimum --> bias
-            indicator._from = minimum
-            indicator._to = reduced_int_literal[-1] 
-            indicator._type = EXP_UP
-            distribution.indicators.append(indicator)
-            # bias --> maximum
-            indicator._from = reduced_int_literal[-1]
-            indicator._to = maximum
-            indicator._type = UNIFORM
-            distribution.indicators.append(indicator)
-
-        return distribution
-    '''
-
-
-
-
-
-'''
-myClause = Clause(2,3)
-myClause.add_integer_literal([1,1,1,4])
-myClause.add_integer_literal([11,22,33,44])
-myClause.add_boolean_literal(0,0)
-#myClause.print_clause()
-
-mySolver = Solver()
-mySolver.formula.append(myClause)
-
-myClause1 = Clause(2,3)
-myClause1.add_integer_literal([10,20,30,40])
-myClause1.add_integer_literal([100,200,300,400])
-myClause1.add_boolean_literal(0,0)
-#myClause1.print_clause()
-
-mySolver.formula.append(myClause1)
-
-mySolver.formula[0].print_clause()
-
-print(mySolver.reduce_literal(0,0,1))
-'''
