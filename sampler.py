@@ -68,8 +68,6 @@ class IntegerLiteral:
 
     def set_literal_coeffs(self, coefficient: [int]):
         self.coefficient = coefficient  # coefficient is a set of integers
-
-
 # # to set a coieffetient of Y(index) # #
     def set_coeff(self,var_name,value):
         var_index = int(var_name[1])
@@ -141,16 +139,6 @@ class IntegerLiteral:
 
             #should be something like the form of y1 + 10 <= 0 or -1 y1 +5 <= 0
             return reduced_integer_literal
-
-
-
-
-
-
-
-
-
-
 # clause is in form
 # "integer_literal[0] | integral_literal[1] | ... | boolean_literal[0] | boolean_literal[1] | ... "
 
@@ -275,21 +263,16 @@ class Sampler:
     """
     initialize member variables in the class
     """
-
     def __init__(self, T, pls0):
         self.formula = get_input()
         self.temperature = T
         self.pls0 = pls0
         #the boolean_variables is empty in this version of the code
         self.formula.boolean_variable_names = []
-
-
     def set_pls(self, pls):
         self.pls = pls
-
     def set_pls0(self, pls0):
         self.pls0 = pls0
-
     def set_temperature(self, t):
         self.temperature = t
 
@@ -310,15 +293,12 @@ class Sampler:
         for i in range(0, n):
             self.current_values_integer.append(random.randint(0, 1000000))  # assume 1000000 is the maximum number 'make an enhancement' !
         
-
     #assign random values to constraints
 
     def make_random_assignment_boolean(self):
         n = self.formula.get_no_of_boolean_variables()
         for i in range(0, n):
             self.current_values_boolean.append(random.randint(0, 1))
-
-
 
     '''
     #check satisfiability of all constraints (old AND only version)
@@ -340,9 +320,6 @@ class Sampler:
         return True
 
     '''
-
-
-
     #check satisfiability of all constraints
     #edited with the OR constraints
     def check_satisfiability(self):
@@ -371,9 +348,6 @@ class Sampler:
             '''
 
         return True
-
-
-
 
     '''
     #check satisfiability of one specific clause(one constraint in this version of code)
@@ -410,11 +384,6 @@ class Sampler:
         #no one is satisfied
         return False
 
-
-
-
-
-
     #find_number_of_unsatisfied_clauses new
     def find_number_of_unsatisfied_clauses(self):
         no_of_unsatisfied_clauses = 0
@@ -442,9 +411,6 @@ class Sampler:
             '''
 
         return no_of_unsatisfied_clauses
-
-
-
 
     #need to be tested yet
     def get_active_clauses(self, variable_to_be_unchanged):
@@ -538,8 +504,6 @@ class Sampler:
     '''
 
 
-
-
     #Fix the negative coeff problem
     # propose value for a randomly selected variable
     # to be edited to fit the OR version
@@ -566,10 +530,8 @@ class Sampler:
                     if reduced_literal.coefficient[index_variable_to_be_unchanged] < 0 :
                         second_bias = max(bias, second_bias)
 
-
                     elif reduced_literal.coefficient[index_variable_to_be_unchanged] > 0 :
                         first_bias = max(bias, first_bias)
-
 
         # construct weights for probability distribution segments(3 segments)
         # y < c1  ,  y > c2
@@ -624,11 +586,6 @@ class Sampler:
 
         #need to add case 3 for the OR case
         return proposed_value
-
-
-
-
-
 
 
     #change current assingment to another based on metrobolis move
